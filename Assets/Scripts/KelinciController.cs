@@ -20,4 +20,14 @@ public class KelinciController : MonoBehaviour
     {
         animator.SetTrigger("isSad");
     }
+
+    public void PouringAnimation()
+    {
+        animator.SetTrigger("isPouring");
+    }
+
+    public void JumpingAnimation()
+    {
+        animator.SetTrigger("isJumping");
+    }
 }

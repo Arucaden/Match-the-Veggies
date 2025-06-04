@@ -12,4 +12,5 @@ public enum SayurEnum
     Timun,
     Tomat,
     Wortel,
+    Labu,
 }

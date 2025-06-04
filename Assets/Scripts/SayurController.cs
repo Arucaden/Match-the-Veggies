@@ -12,21 +12,12 @@ public class SayurController : MonoBehaviour
     public Action OnSayurMismatch;
     public bool IsMatched;
     Transform _basketTransform;
+    Transform _cartTransform;
+    Coroutine _sayurMoveCoroutine;
 
     void Start()
     {
         _originalPosition = transform.position;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    public void OnMouseDown()
-    {
-
     }
 
     public void OnMouseDrag()
@@ -53,7 +44,11 @@ public class SayurController : MonoBehaviour
             OnSayurMatch?.Invoke();
             Destroy(_sayurContainer.gameObject);
             ShrinkSayur();
-            StartCoroutine(SayurMoveAnimation());
+            if (_sayurMoveCoroutine != null)
+            {
+                StopCoroutine(_sayurMoveCoroutine);
+            }
+            _sayurMoveCoroutine = StartCoroutine(SayurMoveAnimation(_basketTransform));
         }
         else
         {
@@ -96,9 +91,24 @@ public class SayurController : MonoBehaviour
         _basketTransform = basketTransform;
     }
 
-    IEnumerator SayurMoveAnimation()
+    public void SetCartTransform(Transform cartTransform)
     {
-        Vector3 targetPosition = _basketTransform.position;
+        _cartTransform = cartTransform;
+    }
+
+    public void PouringAnimation()
+    {
+        Debug.Log("Pouring Animation Triggered");
+        if (_sayurMoveCoroutine != null)
+        {
+            StopCoroutine(_sayurMoveCoroutine);
+        }
+        _sayurMoveCoroutine = StartCoroutine(SayurMoveAnimation(_cartTransform));
+    }
+
+    IEnumerator SayurMoveAnimation(Transform target)
+    {
+        Vector3 targetPosition = target.position;
         float duration = 3f;
         float elapsedTime = 0f;
 

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SayurGenerator : MonoBehaviour
 {
@@ -16,8 +17,49 @@ public class SayurGenerator : MonoBehaviour
     KelinciController _kelinciController;
     [SerializeField]
     Transform _basketTransform;
+    int _roundCount = 0;
+    int _sayurMatchedCount = 0;
+    [SerializeField]
+    Transform _cartTransform;
+    List<SayurController> _generatedSayur = new();
 
-    void Start()
+
+    public void Start()
+    {
+        GenerateSayur();
+    }
+
+    public void NextRound()
+    {
+        _roundCount++;
+        if (_roundCount >= 3)
+        {
+            _kelinciController.Invoke("JumpingAnimation", 1f);
+
+            foreach (SayurController sayur in _generatedSayur)
+            {
+                sayur.Invoke("PouringAnimation", 0.5f);
+                sayur.OnSayurMatch -= OnSayurMatch;
+            }
+            Invoke("ClearGeneratedSayur", 0.5f);
+
+            _kelinciController.Invoke("PouringAnimation", 0.5f);
+            Invoke("BackToMainMenu", 1.5f);
+            return;
+        }
+
+        foreach (SayurController sayur in _generatedSayur)
+        {
+            sayur.Invoke("PouringAnimation", 0.5f);
+            sayur.OnSayurMatch -= OnSayurMatch;
+        }
+        Invoke("ClearGeneratedSayur", 0.5f);
+
+        Invoke("GenerateSayur", 0.5f);
+        _kelinciController.Invoke("PouringAnimation", 0.5f);
+    }
+
+    void GenerateSayur()
     {
         _sayurToGenerate.Clear();
         _sayurToGenerate.AddRange(_sayurContainerPrefabs);
@@ -35,9 +77,32 @@ public class SayurGenerator : MonoBehaviour
                     SayurController sayur = Instantiate(sayurPrefab, _sayurSpawnPoints[i].position, Quaternion.identity);
                     _kelinciController.RegisterSayur(sayur);
                     sayur.SetBasketTransform(_basketTransform);
+                    sayur.OnSayurMatch += OnSayurMatch;
+                    _generatedSayur.Add(sayur);
+                    sayur.SetCartTransform(_cartTransform);
                     break;
                 }
             }
         }
+    }
+
+    public void OnSayurMatch()
+    {
+        _sayurMatchedCount++;
+        if (_sayurMatchedCount == 3)
+        {
+            NextRound();
+            _sayurMatchedCount = 0;
+        }
+    }
+
+    public void ClearGeneratedSayur()
+    {
+        _generatedSayur.Clear();
+    }
+
+    public void BackToMainMenu()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 }
